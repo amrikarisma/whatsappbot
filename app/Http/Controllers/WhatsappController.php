@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Twilio\Rest\Client;
 
 class WhatsappController extends Controller
@@ -19,22 +20,29 @@ class WhatsappController extends Controller
         $from = $request->input('From');
         $body = $request->input('Body');
 
-        $client = new \GuzzleHttp\Client();
         try {
-            $response = $client->request('GET', "https://api.github.com/users/$body");
-            $githubResponse = json_decode($response->getBody());
-            if ($response->getStatusCode() == 200) {
-                $message = "*Name:* $githubResponse->name\n";
-                $message .= "*Bio:* $githubResponse->bio\n";
-                $message .= "*Lives in:* $githubResponse->location\n";
-                $message .= "*Number of Repos:* $githubResponse->public_repos\n";
-                $message .= "*Followers:* $githubResponse->followers devs\n";
-                $message .= "*Following:* $githubResponse->following devs\n";
-                $message .= "*URL:* $githubResponse->html_url\n";
-                $this->sendWhatsAppMessage($from, $from);
+
+            if(Str::contains($body, 'harga')) {
+                $message = "Harga kentang goreng:\n";
+                $message .= "1pcs : Rp.15.000,-\n";
+                $message .= "10pcs : Rp.100.000,-\n";
+                $message .= "15pcs : Rp.130.000,-\n";
+                $message .= "25pcs : Rp.150.000,-\n";
+                $message .= "50pcs : Rp.350.000,-\n";
+                $message .= "Jika ada pertanyaan silahkan tanyakan kembali kak. :)\n";
+            } else if(Str::contains($body, 'stok') ) {
+                $message = "Stok barang banyak ya kak bisa langsung order\n";
+            } else if(Str::contains($body, 'buka') || Str::contains($body, 'tutup') ) {
+                $message = "Kita buka dari Jam 07:00 sampai Jam 20:00 ya kak :) \n";
             } else {
-                $this->sendWhatsAppMessage($githubResponse->message, $from);
+                $message = "Terima Kasih telah menghubungi kami\n";
+                $message .= "Kamu bisa tanyakan hal berikut ke aku ya kak:\n";
+                $message .= "1. Tanya *harga*\n";
+                $message .= "2. Tanya *stok* ketersediaan\n";
+                $message .= "3. Tanya jam *buka* dan *tutup* ketersediaan\n";
             }
+
+            $this->sendWhatsAppMessage($message, $from);
         } catch (RequestException $th) {
             $response = json_decode($th->getResponse()->getBody());
             $this->sendWhatsAppMessage($response->message, $from);
