@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
+use Twilio\Rest\Client;
 
 class WhatsappController extends Controller
 {    
@@ -19,7 +19,7 @@ class WhatsappController extends Controller
         $from = $request->input('From');
         $body = $request->input('Body');
 
-        $client = new Client();
+        $client = new \GuzzleHttp\Client();
         try {
             $response = $client->request('GET', "https://api.github.com/users/$body");
             $githubResponse = json_decode($response->getBody());
@@ -31,10 +31,27 @@ class WhatsappController extends Controller
                 $message .= "*Followers:* $githubResponse->followers devs\n";
                 $message .= "*Following:* $githubResponse->following devs\n";
                 $message .= "*URL:* $githubResponse->html_url\n";
-                $this->sendWhatsAppMessage($message, $from);
+                $this->sendWhatsAppMessage($from, $from);
             } else {
                 $this->sendWhatsAppMessage($githubResponse->message, $from);
             }
+        } catch (RequestException $th) {
+            $response = json_decode($th->getResponse()->getBody());
+            $this->sendWhatsAppMessage($response->message, $from);
+        }
+        return;
+
+    }
+
+    public function sendBroadcast(Request $request)
+    {
+        $from = $request->input('From');
+        $body = $request->input('Body');
+
+        try {
+            //code...
+            $this->sendWhatsAppMessage($body, $from);
+
         } catch (RequestException $th) {
             $response = json_decode($th->getResponse()->getBody());
             $this->sendWhatsAppMessage($response->message, $from);

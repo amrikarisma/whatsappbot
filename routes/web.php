@@ -17,4 +17,5 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->get('whatsapp', 'WhatsappController@index');
+$router->post('chatbot', 'WhatsappController@listenToReplies');
+$router->post('broadcast', 'WhatsappController@sendBroadcast');
